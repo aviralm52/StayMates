@@ -1,8 +1,9 @@
-import React from "react";
-import { Tabs } from "expo-router";
+import { Image } from "react-native";
+import React, { useEffect } from "react";
+import { Tabs, useRouter } from "expo-router";
+
 import Colors from "@/constants/Colors";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { Image } from "react-native";
 
 const Layout = () => {
   return (
@@ -13,7 +14,13 @@ const Layout = () => {
           fontFamily: "mon-sb",
         },
         tabBarStyle: {
-          // height: 50,
+          height: 60,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        },
+        tabBarIconStyle: {
+          marginTop: 3,
         },
       }}
     >

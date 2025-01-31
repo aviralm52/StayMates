@@ -14,13 +14,13 @@ const Layout = () => {
           fontFamily: "mon-sb",
         },
         tabBarStyle: {
-          height: 60,
+          height: 55,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
         },
         tabBarIconStyle: {
-          marginTop: 3,
+          marginTop: 2,
         },
       }}
     >

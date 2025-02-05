@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Link } from "expo-router";
+import * as Haptics from "expo-haptics";
 import React, { useRef, useState } from "react";
 
 import Colors from "@/constants/Colors";
@@ -14,7 +15,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { MaterialIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const { width, height } = Dimensions.get("screen");
+const { width } = Dimensions.get("screen");
 
 const categories = [
   { name: "Tiny homes", icon: "home" },
@@ -26,12 +27,25 @@ const categories = [
   { name: "Beachfront", icon: "beach-access" },
 ];
 
-const ExploreHeader = React.memo(() => {
+interface PageProps {
+  onCategoryChanged: (category: string) => void;
+}
+
+const ExploreHeader = React.memo(({ onCategoryChanged }: PageProps) => {
+  const scrollRef = useRef<ScrollView>(null);
   const itemsRef = useRef<Array<View | null>>([]);
-  const [activeIndex, setActiveIndex] = useState(2);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   const selectCategory = (index: number) => {
+    const selected = itemsRef.current[index];
     setActiveIndex(index);
+
+    selected?.measure((x) => {
+      scrollRef.current?.scrollTo({ x: x - 16, y: 0, animated: true });
+    });
+
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+    onCategoryChanged(categories[index].name);
   };
 
   return (
@@ -56,6 +70,7 @@ const ExploreHeader = React.memo(() => {
         </View>
 
         <ScrollView
+          ref={scrollRef}
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{
@@ -82,7 +97,7 @@ const ExploreHeader = React.memo(() => {
               <MaterialIcons
                 name={item.icon as any}
                 size={24}
-                color={activeIndex ? "#000" : Colors.gray}
+                color={activeIndex === index ? "#000" : Colors.gray}
               />
               <Text
                 style={

@@ -93,7 +93,10 @@ function RootLayoutNav() {
       />
 
       {/* property preview page */}
-      <Stack.Screen name="listing/[id]" options={{ headerTitle: "" }} />
+      <Stack.Screen
+        name="listing/[id]"
+        options={{ headerTitle: "", headerTransparent: true }}
+      />
 
       {/* bookings page */}
       <Stack.Screen

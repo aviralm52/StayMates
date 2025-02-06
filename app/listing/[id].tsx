@@ -1,37 +1,76 @@
-import React from "react";
+import { useLocalSearchParams, useNavigation } from "expo-router";
+import React, { useLayoutEffect } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  Dimensions,
+  TouchableOpacity,
+  Share,
+} from "react-native";
+import listingsData from "@/assets/data/airbnb-listings.json";
+import { Ionicons } from "@expo/vector-icons";
+import Colors from "@/constants/Colors";
 import Animated, {
-  interpolate,
   SlideInDown,
+  interpolate,
   useAnimatedRef,
   useAnimatedStyle,
   useScrollViewOffset,
 } from "react-native-reanimated";
-import {
-  View,
-  StyleSheet,
-  Dimensions,
-  Text,
-  Image,
-  TouchableOpacity,
-} from "react-native";
-import { useNavigation } from "expo-router";
-import { useLocalSearchParams } from "expo-router/build/hooks";
-
-import Colors from "@/constants/Colors";
-import { Ionicons } from "@expo/vector-icons";
-import { ListingType } from "@/interfaces/listing";
 import { defaultStyles } from "@/constants/Styles";
-import listingData from "@/assets/data/airbnb-listings.json";
 
-const IMG_HEIGHT = 250;
 const { width } = Dimensions.get("window");
+const IMG_HEIGHT = 300;
 
-const Page = () => {
-  const { id } = useLocalSearchParams<{ id: string }>();
-
-  const listing = (listingData as ListingType[]).find((item) => item.id === id);
-  const scrollRef = useAnimatedRef<Animated.ScrollView>();
+const DetailsPage = () => {
+  const { id } = useLocalSearchParams();
+  const listing = (listingsData as any[]).find((item) => item.id === id);
   const navigation = useNavigation();
+  const scrollRef = useAnimatedRef<Animated.ScrollView>();
+
+  const shareListing = async () => {
+    try {
+      await Share.share({
+        title: listing.name,
+        url: listing.listing_url,
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerTitle: "",
+      headerTransparent: true,
+
+      headerBackground: () => (
+        <Animated.View
+          style={[headerAnimatedStyle, styles.header]}
+        ></Animated.View>
+      ),
+      headerRight: () => (
+        <View style={styles.bar}>
+          <TouchableOpacity style={styles.roundButton} onPress={shareListing}>
+            <Ionicons name="share-outline" size={22} color={"#000"} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.roundButton}>
+            <Ionicons name="heart-outline" size={22} color={"#000"} />
+          </TouchableOpacity>
+        </View>
+      ),
+      headerLeft: () => (
+        <TouchableOpacity
+          style={styles.roundButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="chevron-back" size={24} color={"#000"} />
+        </TouchableOpacity>
+      ),
+    });
+  }, []);
 
   const scrollOffset = useScrollViewOffset(scrollRef);
 
@@ -41,7 +80,7 @@ const Page = () => {
         {
           translateY: interpolate(
             scrollOffset.value,
-            [-IMG_HEIGHT, 0, IMG_HEIGHT],
+            [-IMG_HEIGHT, 0, IMG_HEIGHT, IMG_HEIGHT],
             [-IMG_HEIGHT / 2, 0, IMG_HEIGHT * 0.75]
           ),
         },
@@ -56,6 +95,12 @@ const Page = () => {
     };
   });
 
+  const headerAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: interpolate(scrollOffset.value, [0, IMG_HEIGHT / 1.5], [0, 1]),
+    };
+  }, []);
+
   return (
     <View style={styles.container}>
       <Animated.ScrollView
@@ -64,46 +109,46 @@ const Page = () => {
         scrollEventThrottle={16}
       >
         <Animated.Image
-          source={{ uri: listing?.xl_picture_url }}
+          source={{ uri: listing.xl_picture_url }}
           style={[styles.image, imageAnimatedStyle]}
           resizeMode="cover"
         />
 
         <View style={styles.infoContainer}>
-          <Text style={styles.name}>{listing?.name}</Text>
+          <Text style={styles.name}>{listing.name}</Text>
           <Text style={styles.location}>
-            {listing?.room_type} in {listing?.smart_location}
+            {listing.room_type} in {listing.smart_location}
           </Text>
           <Text style={styles.rooms}>
-            {listing?.guests_included} guests · {listing?.bedrooms} bedrooms ·{" "}
-            {listing?.beds} bed · {listing?.bathrooms} bathrooms
+            {listing.guests_included} guests · {listing.bedrooms} bedrooms ·{" "}
+            {listing.beds} bed · {listing.bathrooms} bathrooms
           </Text>
           <View style={{ flexDirection: "row", gap: 4 }}>
             <Ionicons name="star" size={16} />
             <Text style={styles.ratings}>
-              {listing?.review_scores_rating ?? 20 / 20} ·{" "}
-              {listing?.number_of_reviews} reviews
+              {listing.review_scores_rating / 20} · {listing.number_of_reviews}{" "}
+              reviews
             </Text>
           </View>
           <View style={styles.divider} />
 
           <View style={styles.hostView}>
             <Image
-              source={{ uri: listing?.host_picture_url }}
+              source={{ uri: listing.host_picture_url }}
               style={styles.host}
             />
 
             <View>
               <Text style={{ fontWeight: "500", fontSize: 16 }}>
-                Hosted by {listing?.host_name}
+                Hosted by {listing.host_name}
               </Text>
-              <Text>Host since {listing?.host_since}</Text>
+              <Text>Host since {listing.host_since}</Text>
             </View>
           </View>
 
           <View style={styles.divider} />
 
-          <Text style={styles.description}>{listing?.description}</Text>
+          <Text style={styles.description}>{listing.description}</Text>
         </View>
       </Animated.ScrollView>
 
@@ -119,8 +164,8 @@ const Page = () => {
           }}
         >
           <TouchableOpacity style={styles.footerText}>
-            <Text style={styles.footerPrice}>€{listing?.price}</Text>
-            <Text>/night</Text>
+            <Text style={styles.footerPrice}>€{listing.price}</Text>
+            <Text>night</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -215,11 +260,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderColor: Colors.gray,
   },
-
   description: {
     fontSize: 16,
     marginTop: 10,
     fontFamily: "mon",
   },
 });
-export default Page;
+
+export default DetailsPage;

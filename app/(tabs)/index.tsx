@@ -4,7 +4,9 @@ import React, { useMemo, useState } from "react";
 import listingData from "@/assets/data/airbnb-listings.json";
 
 import Listings from "@/components/Listings";
+import ListingsMap from "@/components/ListingsMap";
 import ExploreHeader from "@/components/ExploreHeader";
+import listingsDataGeo from "@/assets/data/airbnb-listings.geo.json";
 
 const Index = () => {
   const [category, setCategory] = useState("Tiny homes");
@@ -23,7 +25,8 @@ const Index = () => {
           header: () => <ExploreHeader onCategoryChanged={onDataChanges} />,
         }}
       />
-      <Listings listings={items} category={category} />
+      {/* <Listings listings={items} category={category} /> */}
+      <ListingsMap listings={listingsDataGeo} />
     </View>
   );
 };
